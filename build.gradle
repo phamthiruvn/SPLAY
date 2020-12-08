@@ -1,11 +1,17 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
-
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 group 'org.example'
 version '1.0-SNAPSHOT'
+
+javafx {
+    version = "15.0.1"
+    modules = ['javafx.controls', 'javafx.graphics']
+}
 
 repositories {
     mavenCentral()
@@ -21,6 +27,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-api:5.5.1"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:5.5.1"
     testRuntime "org.junit.platform:junit-platform-launcher:1.5.1"
+    implementation 'no.tornado:tornadofx:1.7.20'
 
 }
 

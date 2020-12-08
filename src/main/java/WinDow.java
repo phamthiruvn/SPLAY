@@ -3,13 +3,11 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 
 public class WinDow extends JFrame {
-    private SplayTreeViewer viewer = new SplayTreeViewer(1000, 1000);
+    private SplayTreeViewer viewer = new SplayTreeViewer(1600);
     private JPanel optionPanel;
 
     private void setMainPanel() {
-        viewer.setBackground(new Color(0xE0E2D1));
-        viewer.setBorder(new LineBorder(new Color(0x1F312E), 2));
-        this.add(viewer, BorderLayout.CENTER);
+
     }
 
     private void label() {
@@ -34,7 +32,7 @@ public class WinDow extends JFrame {
         JButton insertButton = new JButton("confirm");
         insertButton.addActionListener(e -> {
 
-            viewer.insert(Integer.parseInt(insertField.getText()));
+            viewer.insertNode(Integer.parseInt(insertField.getText()));
             repaint();
         });
         insertPanel.add(label);
@@ -68,7 +66,7 @@ public class WinDow extends JFrame {
         setDialogs();
         JButton resetButton = new JButton("reset");
         resetButton.addActionListener(e -> {
-            viewer.clearTree();
+            viewer.resetTree();
             repaint();
         });
         optionPanel.add(resetButton);
@@ -77,7 +75,8 @@ public class WinDow extends JFrame {
 
     private WinDow() {
         setMainPanel();
-        setSize(1200, 1000);
+        setSize(1600, 900);
+        setResizable(false);
         label();
         setOptionPanel();
         setVisible(true);
@@ -85,6 +84,5 @@ public class WinDow extends JFrame {
     }
 
     public static void main(String[] args) {
-        WinDow w = new WinDow();
     }
 }

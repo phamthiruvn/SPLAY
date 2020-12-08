@@ -163,6 +163,10 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         }
         return current.value
     }
+    override fun clear() {
+        root = null
+        size = 0
+    }
 
 
     override fun iterator(): MutableIterator<T> {

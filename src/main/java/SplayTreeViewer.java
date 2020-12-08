@@ -1,13 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class SplayTreeViewer extends JPanel {
+class xx extends JPanel {
     private SplayTree<Integer> tree;
     private int h;
     private int CANVAS_WIDTH;
     static private int diameter = 40;
 
-    SplayTreeViewer(int width, int height) {
+    xx(int width, int height) {
         new JPanel(null) {
             @Override
             public Dimension getPreferredSize() {
