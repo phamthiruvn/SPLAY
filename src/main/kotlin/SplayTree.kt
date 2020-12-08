@@ -2,6 +2,14 @@ import java.util.*
 
 class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet<T> {
 
+    class SplayNode<T> constructor(
+        var value: T
+    ) {
+        var parent: SplayNode<T>? = null
+        var right: SplayNode<T>? = null
+        var left: SplayNode<T>? = null
+    }
+
     private var root: SplayNode<T>? = null
     override var size: Int = 0
         private set
@@ -41,7 +49,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     /**
      *  splay
      */
-    private fun splay(node: SplayNode<T>) {
+    fun splay(node: SplayNode<T>) {
         while (node.parent != null) {
             val parent = node.parent!!
             if (parent.parent == null) {
@@ -163,6 +171,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         }
         return current.value
     }
+
     override fun clear() {
         root = null
         size = 0
