@@ -10,25 +10,26 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         var left: SplayNode<T>? = null
     }
 
-    private var root: SplayNode<T>? = null
+    var root: SplayNode<T>? = null
+        private set
+
     override var size: Int = 0
         private set
 
-    fun getRoot(): SplayNode<T>? {
-        return root
-    }
 
     /**
      * left rotate
      */
     private fun leftRotate(children: SplayNode<T>, parent: SplayNode<T>) {
-        if (parent.parent != null) {
-            if (parent == parent.parent!!.left) parent.parent!!.left = children else parent.parent!!.right = children
+        val grandParent = parent.parent
+        if (grandParent != null) {
+            if (parent == grandParent.left) grandParent.left = children else grandParent.right = children
         }
-        if (children.left != null) children.left!!.parent = parent
-        children.parent = parent.parent
+        val childrenLeft = children.left
+        if (childrenLeft != null) childrenLeft.parent = parent
+        children.parent = grandParent
         parent.parent = children
-        parent.right = children.left
+        parent.right = childrenLeft
         children.left = parent
     }
 
@@ -36,20 +37,22 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
      * right rotate
      */
     private fun rightRotate(children: SplayNode<T>, parent: SplayNode<T>) {
-        if (parent.parent != null) {
-            if (parent == parent.parent!!.left) parent.parent!!.left = children else parent.parent!!.right = children
+        val grandParent = parent.parent
+        if (grandParent != null) {
+            if (parent == grandParent.left) grandParent.left = children else grandParent.right = children
         }
-        if (children.right != null) children.right!!.parent = parent
-        children.parent = parent.parent
+        val childrenRight = children.right
+        if (childrenRight != null) childrenRight.parent = parent
+        children.parent = grandParent
         parent.parent = children
-        parent.left = children.right
+        parent.left = childrenRight
         children.right = parent
     }
 
     /**
      *  splay
      */
-    fun splay(node: SplayNode<T>) {
+    private fun splay(node: SplayNode<T>) {
         while (node.parent != null) {
             val parent = node.parent!!
             if (parent.parent == null) {
@@ -103,18 +106,18 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     private fun findWithOutSplay(start: SplayNode<T>?, value: T): SplayNode<T>? {
         if (start == null) return null
         val comparison = value.compareTo(start.value)
-        return if (comparison == 0) {
-            start
-        } else if (comparison < 0) {
-            if (start.left == null) null else findWithOutSplay(start.left, value)
-        } else {
-            if (start.right == null) null else findWithOutSplay(start.right, value)
+        return when {
+            comparison == 0 -> {
+                start
+            }
+            comparison < 0 -> findWithOutSplay(start.left, value)
+            else -> findWithOutSplay(start.right, value)
         }
     }
 
     override fun remove(element: T): Boolean {
         val node = findWithOutSplay(root, element)
-        return if (node != null && node.value == element) {
+        return if (node != null) {
             remove(node)
             size--
             true
@@ -123,17 +126,20 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
 
     private fun remove(node: SplayNode<T>) {
         splay(node)
-        if (node.left != null && node.right != null) {
+        val nodeLeft = node.left
+        val nodeRight = node.right
+        if (nodeLeft != null && nodeRight != null) {
             val pre = predecessor(node)
             pre.right = node.right
-            node.right!!.parent = pre
-            node.left!!.parent = null
+            nodeRight.parent = pre
+            nodeLeft.parent = null
             root = node.left
-        } else if (node.right != null) {
-            node.right!!.parent = null
+            splay(pre)
+        } else if (nodeRight != null) {
+            nodeRight.parent = null
             root = node.right
-        } else if (node.left != null) {
-            node.left!!.parent = null
+        } else if (nodeLeft != null) {
+            nodeLeft.parent = null
             root = node.left
         } else {
             root = null
@@ -222,12 +228,11 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         }
     }
 
-    private class SubSet<T : Comparable<T>>(
-        private val tree: SplayTree<T>,
+    inner class SubSet(
         private val fromElement: T?,
         private val toElement: T?
     ) : TreeSet<T>() {
-
+        private val tree = this@SplayTree
         override val size: Int
             get() {
                 var size = 0
@@ -264,11 +269,9 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
             return if (fromElement == null) tree.first() else {
                 val tree = tree.iterator()
                 var t: T? = null
-                var next: T?
                 while (tree.hasNext()) {
-                    next = tree.next()
-                    t = next
-                    if (next >= fromElement) break
+                    t = tree.next()
+                    if (t >= fromElement) break
                 }
                 t
             }
@@ -292,16 +295,16 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     }
 
     override fun headSet(toElement: T): SortedSet<T> {
-        return SubSet(this, null, toElement)
+        return SubSet(null, toElement)
     }
 
     override fun tailSet(fromElement: T): SortedSet<T> {
-        return SubSet(this, fromElement, null)
+        return SubSet(fromElement, null)
     }
 
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> {
         require(fromElement <= toElement)
-        return SubSet(this, fromElement, toElement)
+        return SubSet(fromElement, toElement)
     }
 
     override fun height(): Int =

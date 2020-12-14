@@ -8,7 +8,7 @@ import kotlin.math.pow
 
 internal class View(width: Int) : JPanel() {
     private val tree: SplayTree<Int> = SplayTree()
-    private var h = heightTree(tree.getRoot())
+    private var h = heightTree(tree.root)
     private val tableWidth = width
     private val diameter = 3
     private val fontNumber = Font("Time New Roman", Font.BOLD, 20)
@@ -21,13 +21,13 @@ internal class View(width: Int) : JPanel() {
 
     fun insertNode(value: Int) {
         tree.add(value)
-        h = heightTree(tree.getRoot())
+        h = heightTree(tree.root)
         this.repaint()
     }
 
     fun removeNode(value: Int) {
         tree.remove(value)
-        h = heightTree(tree.getRoot())
+        h = heightTree(tree.root)
         this.repaint()
     }
 
@@ -69,14 +69,14 @@ internal class View(width: Int) : JPanel() {
     }
 
     public override fun paintComponent(g: Graphics) {
-        if (tree.getRoot() != null) {
+        if (tree.root != null) {
             g.color = Color.black
             g.fillOval(tableWidth / 2, 10, diameter, diameter)
             g.drawOval(tableWidth / 2, 10, diameter, diameter)
             g.color = color
             g.font = fontNumber
-            g.drawString(tree.getRoot()!!.value.toString(), tableWidth / 2 + 5, 10 + 10)
-            if (tree.size > 1) drawTree(tree.getRoot(), h - 2, tableWidth / 2, 10, g)
+            g.drawString(tree.root!!.value.toString(), tableWidth / 2 + 5, 10 + 10)
+            if (tree.size > 1) drawTree(tree.root, h - 2, tableWidth / 2, 10, g)
         }
     }
 
