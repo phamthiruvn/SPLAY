@@ -1,4 +1,3 @@
-
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.util.*
 import kotlin.math.abs
@@ -316,8 +315,119 @@ abstract class AbstractSplayTreeTest {
             assertFailsWith<IllegalArgumentException>("An illegal argument was passed to add() without raising an exception") {
                 subSet.add(invalidAddition)
             }
+
             println("All clear!")
         }
+    }
+
+    protected fun doIteratorSubSetTest() {
+        implementationTest { create().iterator().hasNext() }
+        implementationTest { create().iterator().next() }
+        val random = Random()
+        for (iteration in 1..100) {
+            val controlSet = TreeSet<Int>()
+            for (i in 1..20) {
+                controlSet.add(random.nextInt(100))
+            }
+            println("Control set: $controlSet")
+            val initialSet = create()
+            val subSet = initialSet.subSet(controlSet.first() - 1, controlSet.last() + 1)
+            assertFalse(
+                subSet.iterator().hasNext(),
+                "Iterator of an empty tree should not have any next elements."
+            )
+            for (element in controlSet) {
+                subSet.add(element)
+            }
+            val iterator1 = subSet.iterator()
+            val iterator2 = subSet.iterator()
+            println("Checking if calling hasNext() changes the state of the iterator...")
+            while (iterator1.hasNext()) {
+                assertEquals(
+                    iterator2.next(), iterator1.next(),
+                    "Calling hasNext() changes the state of the iterator."
+                )
+            }
+            val controlIter = controlSet.iterator()
+            val binaryIter = subSet.iterator()
+            println("Checking if the iterator traverses the tree correctly...")
+            while (controlIter.hasNext()) {
+                assertEquals(
+                    controlIter.next(), binaryIter.next(),
+                    "Iterator doesn't traverse the tree correctly."
+                )
+            }
+            assertFailsWith<NoSuchElementException>("Something was supposedly returned after the elements ended") {
+                binaryIter.next()
+            }
+            println("All clear!")
+        }
+    }
+
+    protected fun doIteratorRemoveSubSetTest() {
+        implementationTest { create().iterator().remove() }
+        val random = Random()
+        for (iteration in 1..100) {
+            val controlSet = TreeSet<Int>()
+            val removeIndex = random.nextInt(20) + 1
+            var toRemove = 0
+            for (i in 1..20) {
+                val newNumber = random.nextInt(100)
+                controlSet.add(newNumber)
+                if (i == removeIndex) {
+                    toRemove = newNumber
+                }
+            }
+            println("Initial set: $controlSet")
+            val initialSet = create()
+            val subSet = initialSet.subSet(controlSet.first() - 1, controlSet.last() + 1)
+            for (element in controlSet) {
+                subSet += element
+            }
+            controlSet.remove(toRemove)
+            println("Control set: $controlSet")
+            println("Removing element $toRemove from the set through the iterator...")
+            val iterator = subSet.iterator()
+            assertFailsWith<IllegalStateException>("Something was supposedly removed before the iteration started") {
+                iterator.remove()
+            }
+            var counter = subSet.size
+            print("Iterating: ")
+            while (iterator.hasNext()) {
+                val element = iterator.next()
+                print("$element, ")
+                counter--
+                if (element == toRemove) {
+                    iterator.remove()
+                    assertFailsWith<IllegalStateException>("remove() was successfully called twice in a row.") {
+                        iterator.remove()
+                    }
+                }
+            }
+            assertEquals(
+                0, counter,
+                "remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
+            )
+
+            assertEquals(
+                controlSet.size, subSet.size,
+                "The size of the set is incorrect: was ${subSet.size}, should've been ${controlSet.size}."
+            )
+            for (element in controlSet) {
+                assertTrue(
+                    subSet.contains(element),
+                    "The set doesn't have the element $element from the control set."
+                )
+            }
+            for (element in subSet) {
+                assertTrue(
+                    controlSet.contains(element),
+                    "The set has the element $element that is not in control set."
+                )
+            }
+            println("All clear!")
+        }
+
     }
 
     protected fun doSubSetRelationTest() {
@@ -363,6 +473,7 @@ abstract class AbstractSplayTreeTest {
                     )
                 }
             }
+
             assertEquals(
                 allElementCounter, initialSet.size,
                 "The size of the initial set is not as expected."
@@ -371,6 +482,7 @@ abstract class AbstractSplayTreeTest {
                 validElementCounter, subSet.size,
                 "The size of the subset is not as expected."
             )
+
             println("All clear!")
         }
     }

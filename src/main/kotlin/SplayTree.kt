@@ -81,6 +81,9 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         root = node
     }
 
+    override fun contains(element: T): Boolean {
+        return findWithOutSplay(root, element) != null
+    }
 
     override fun add(element: T): Boolean {
         if (findWithOutSplay(root, element) != null) return false
@@ -183,7 +186,6 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         size = 0
     }
 
-
     override fun iterator(): MutableIterator<T> {
         return SplayTreeIterator()
     }
@@ -200,7 +202,9 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
             }
         }
 
-        override fun hasNext(): Boolean = stack.isNotEmpty()
+        override fun hasNext(): Boolean {
+            return stack.isNotEmpty()
+        }
 
         override fun next(): T {
             if (!hasNext()) throw NoSuchElementException()
@@ -231,9 +235,12 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     inner class SubSet(
         private val fromElement: T?,
         private val toElement: T?
-    ) : TreeSet<T>() {
+    ) : SortedSet<T> {
+
         private val tree = this@SplayTree
-        override val size: Int
+
+        override var size: Int = 0
+            private set
             get() {
                 var size = 0
                 for (aTree in tree) {
@@ -290,6 +297,90 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
                 }
                 t
             }
+        }
+
+        override fun addAll(elements: Collection<T>): Boolean {
+            var added = false
+            for (element in elements) {
+                if (!tree.contains(element) || inRange(element)) added = this.add(element)
+            }
+            return added
+        }
+
+        override fun removeAll(elements: Collection<T>): Boolean {
+            var removed = false
+            for (element in elements) {
+                if (tree.contains(element)) removed = this.remove(element)
+            }
+            return removed
+        }
+
+        override fun clear() {
+            for (element in this) {
+                this.remove(element)
+            }
+        }
+
+        override fun retainAll(elements: Collection<T>): Boolean {
+            var removed = false
+            for (element in elements) {
+                if (tree.contains(element)) removed = this.remove(element)
+            }
+            return removed
+        }
+
+        override fun containsAll(elements: Collection<T>): Boolean {
+            var contains = true
+            for (element in elements) {
+                if (!tree.contains(element)) contains = false
+            }
+            return contains
+        }
+
+        override fun isEmpty(): Boolean {
+            return size == 0
+        }
+
+        override fun iterator(): MutableIterator<T> {
+            return SubSetIterator()
+        }
+
+        inner class SubSetIterator internal constructor() : MutableIterator<T> {
+
+            private val iterator = tree.iterator()
+            private var next = if (iterator.hasNext()) iterator.next() else null
+            private var current: T? = null
+
+            override fun hasNext(): Boolean {
+                return next != null
+            }
+
+            override fun next(): T {
+                if (!hasNext()) throw NoSuchElementException()
+                current = next
+                next = if (iterator.hasNext()) iterator.next() else null
+                return current!!
+            }
+
+            override fun remove() {
+                if (current == null) throw IllegalStateException()
+                remove(current)
+                current = null
+            }
+
+        }
+
+        override fun subSet(p0: T, p1: T): SortedSet<T> {
+            require(p0 <= p1)
+            return SubSet(p0, p1)
+        }
+
+        override fun headSet(p0: T): SortedSet<T> {
+            return SubSet(null, p0)
+        }
+
+        override fun tailSet(p0: T): SortedSet<T> {
+            return SubSet(p0, null)
         }
 
     }
