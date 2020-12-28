@@ -39,14 +39,13 @@ class SplayTreeTest : AbstractSplayTreeTest() {
     fun subSetTest() {
         doSubSetTest()
     }
-
     @Test
     fun iteratorSubSetTest() {
         doIteratorSubSetTest()
     }
 
     @Test
-    fun iteratorRemoveSubSetTest() {
+    fun iteratorSubSetRemoveTest() {
         doIteratorRemoveSubSetTest()
     }
 

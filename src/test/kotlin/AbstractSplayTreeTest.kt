@@ -166,18 +166,19 @@ abstract class AbstractSplayTreeTest {
             val controlSet = TreeSet<Int>()
             for (i in 1..20) {
                 controlSet.add(random.nextInt(100))
+                println(controlSet)
             }
             println("Control set: $controlSet")
-            val binarySet = create()
+            val splaySet = create()
             assertFalse(
-                binarySet.iterator().hasNext(),
+                splaySet.iterator().hasNext(),
                 "Iterator of an empty tree should not have any next elements."
             )
             for (element in controlSet) {
-                binarySet += element
+                splaySet += element
             }
-            val iterator1 = binarySet.iterator()
-            val iterator2 = binarySet.iterator()
+            val iterator1 = splaySet.iterator()
+            val iterator2 = splaySet.iterator()
             println("Checking if calling hasNext() changes the state of the iterator...")
             while (iterator1.hasNext()) {
                 assertEquals(
@@ -186,16 +187,16 @@ abstract class AbstractSplayTreeTest {
                 )
             }
             val controlIter = controlSet.iterator()
-            val binaryIter = binarySet.iterator()
+            val setIter = splaySet.iterator()
             println("Checking if the iterator traverses the tree correctly...")
             while (controlIter.hasNext()) {
                 assertEquals(
-                    controlIter.next(), binaryIter.next(),
+                    controlIter.next(), setIter.next(),
                     "Iterator doesn't traverse the tree correctly."
                 )
             }
             assertFailsWith<NoSuchElementException>("Something was supposedly returned after the elements ended") {
-                binaryIter.next()
+                setIter.next()
             }
             println("All clear!")
         }
@@ -216,18 +217,18 @@ abstract class AbstractSplayTreeTest {
                 }
             }
             println("Initial set: $controlSet")
-            val binarySet = create()
+            val splaySet = create()
             for (element in controlSet) {
-                binarySet += element
+                splaySet += element
             }
             controlSet.remove(toRemove)
             println("Control set: $controlSet")
             println("Removing element $toRemove from the tree through the iterator...")
-            val iterator = binarySet.iterator()
+            val iterator = splaySet.iterator()
             assertFailsWith<IllegalStateException>("Something was supposedly removed before the iteration started") {
                 iterator.remove()
             }
-            var counter = binarySet.size
+            var counter = splaySet.size
             print("Iterating: ")
             while (iterator.hasNext()) {
                 val element = iterator.next()
@@ -245,21 +246,23 @@ abstract class AbstractSplayTreeTest {
                 "remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
             )
             assertTrue(
-                binarySet.checkInvariant(),
+                splaySet.checkInvariant(),
                 "The tree invariant is false after .remove()."
             )
             assertEquals(
-                controlSet.size, binarySet.size,
-                "The size of the tree is incorrect: was ${binarySet.size}, should've been ${controlSet.size}."
+                controlSet.size, splaySet.size,
+                "The size of the tree is incorrect: was ${splaySet.size}, should've been ${controlSet.size}."
             )
-
+            println()
+            println(splaySet)
             for (element in controlSet) {
                 assertTrue(
-                    binarySet.contains(element),
+                    splaySet.contains(element),
                     "The tree doesn't have the element $element from the control set."
                 )
             }
-            for (element in binarySet) {
+
+            for (element in splaySet) {
                 assertTrue(
                     controlSet.contains(element),
                     "The tree has the element $element that is not in control set."

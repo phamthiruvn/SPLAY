@@ -1,6 +1,7 @@
 import java.util.*
 
-class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet<T> {
+
+open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet<T> {
 
     class SplayNode<T> constructor(
         var value: T
@@ -13,7 +14,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     var root: SplayNode<T>? = null
         private set
 
-    override var size: Int = 0
+    final override var size: Int = 0
         private set
 
 
@@ -83,8 +84,10 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
 
     override fun contains(element: T): Boolean {
         val node = findWithOutSplay(root, element)
-        if (node != null) splay(node)
-        return node != null
+        return if (node != null) {
+            splay(node)
+            true
+        } else false
     }
 
     override fun add(element: T): Boolean {
@@ -122,37 +125,33 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
 
     override fun remove(element: T): Boolean {
         val node = findWithOutSplay(root, element)
-        return if (node != null) {
-            remove(node)
+        return if (node == null) false
+        else {
+
+            splay(node)
+            val nodeLeft = node.left
+            val nodeRight = node.right
+            if (nodeLeft != null && nodeRight != null) {
+                val pre = predecessor(node)
+                pre.right = node.right
+                nodeRight.parent = pre
+                nodeLeft.parent = null
+                splay(pre)
+            } else if (nodeRight != null) {
+                nodeRight.parent = null
+                splay(node.right!!)
+            } else if (nodeLeft != null) {
+                nodeLeft.parent = null
+                splay(node.left!!)
+            } else root = null
+            node.parent = null
+            node.left = null
+            node.right = null
             size--
             true
-        } else false
+        }
     }
 
-    private fun remove(node: SplayNode<T>) {
-        splay(node)
-        val nodeLeft = node.left
-        val nodeRight = node.right
-        if (nodeLeft != null && nodeRight != null) {
-            val pre = predecessor(node)
-            pre.right = node.right
-            nodeRight.parent = pre
-            nodeLeft.parent = null
-            root = node.left
-            splay(pre)
-        } else if (nodeRight != null) {
-            nodeRight.parent = null
-            root = node.right
-        } else if (nodeLeft != null) {
-            nodeLeft.parent = null
-            root = node.left
-        } else {
-            root = null
-        }
-        node.parent = null
-        node.left = null
-        node.right = null
-    }
 
     private fun predecessor(start: SplayNode<T>): SplayNode<T> {
         var node = start
@@ -162,6 +161,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         }
         return node
     }
+
 
     override fun comparator(): Comparator<in T>? = null
 
@@ -193,38 +193,34 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
     }
 
     inner class SplayTreeIterator : MutableIterator<T> {
-        private var current: SplayNode<T>? = null
-        private val stack = Stack<SplayNode<T>>()
+        private var current: SplayNode<T>? = root
+        private val list = mutableListOf<SplayNode<T>>()
 
         init {
-            current = root
             while (current != null) {
-                stack.push(current)
+                list.add(current!!)
                 current = current!!.left
             }
         }
 
         override fun hasNext(): Boolean {
-            return stack.isNotEmpty()
+            return list.isNotEmpty()
         }
 
         override fun next(): T {
             if (!hasNext()) throw NoSuchElementException()
-            var node = stack.pop()
+            var node = list.removeLast()
             current = node
-            if (node.right != null) {
-                node = node.right
-                pushAll(node)
-            }
+            if (node.right != null) pushAll(node.right!!)
             return current!!.value
         }
 
         private fun pushAll(node: SplayNode<T>) {
-            if (node !in stack) {
-                stack.push(node)
-                if (node.left != null)
-                    pushAll(node.left!!)
+            if (node !in list) {
+                list.add(node)
             }
+            if (node.left != null)
+                pushAll(node.left!!)
         }
 
         override fun remove() {
@@ -284,7 +280,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         override fun addAll(elements: Collection<T>): Boolean {
             var added = false
             for (element in elements) {
-                if (!tree.contains(element) || inRange(element)) added = this.add(element)
+                if (!tree.contains(element) || inRange(element)) added = tree.add(element)
             }
             return added
         }
@@ -292,22 +288,19 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         override fun removeAll(elements: Collection<T>): Boolean {
             var removed = false
             for (element in elements) {
-                if (tree.contains(element)) removed = this.remove(element)
+                if (tree.contains(element)) removed = tree.remove(element)
             }
             return removed
         }
 
         override fun clear() {
-            val elements = this.toList()
-            this.removeAll(elements)
+            val removedList = tree.toList()
+            removeAll(removedList)
         }
 
         override fun retainAll(elements: Collection<T>): Boolean {
-            var removed = false
-            for (element in tree) {
-                if (!elements.contains(element)) removed = this.remove(element)
-            }
-            return removed
+            val removedList = tree - elements
+            return removeAll(removedList)
         }
 
         override fun containsAll(elements: Collection<T>): Boolean {
@@ -356,7 +349,7 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
 
             override fun remove() {
                 if (current == null) throw IllegalStateException()
-                remove(current)
+                remove(current!!)
                 current = null
             }
         }
@@ -408,5 +401,4 @@ class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet
         val right = node.right
         return right == null || right.value > node.value && checkInvariant(right)
     }
-
 }
