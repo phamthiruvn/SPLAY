@@ -402,12 +402,3 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
         return right == null || right.value > node.value && checkInvariant(right)
     }
 }
-
-fun main() {
-    val s = SplayTree<Int>()
-    s.addAll((1..30).shuffled())
-    println(s)
-    val it = s.subSet(3, 10)
-    println(it)
-    print(s)
-}
