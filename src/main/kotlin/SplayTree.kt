@@ -288,18 +288,18 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
         override fun removeAll(elements: Collection<T>): Boolean {
             var removed = false
             for (element in elements) {
-                if (tree.contains(element)) removed = tree.remove(element)
+                if (tree.contains(element) && inRange(element)) removed = tree.remove(element)
             }
             return removed
         }
 
         override fun clear() {
-            val removedList = tree.toList()
+            val removedList = iterator().asSequence()
             removeAll(removedList)
         }
 
         override fun retainAll(elements: Collection<T>): Boolean {
-            val removedList = tree - elements
+            val removedList = iterator().asSequence() - elements
             return removeAll(removedList)
         }
 
@@ -361,12 +361,12 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
 
         override fun headSet(p0: T): SortedSet<T> {
             require(inRange(p0))
-            return SubSet(null, p0)
+            return SubSet(fromElement, p0)
         }
 
         override fun tailSet(p0: T): SortedSet<T> {
             require(inRange(p0))
-            return SubSet(p0, null)
+            return SubSet(p0, toElement)
         }
 
     }
@@ -401,4 +401,13 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
         val right = node.right
         return right == null || right.value > node.value && checkInvariant(right)
     }
+}
+
+fun main() {
+    val s = SplayTree<Int>()
+    s.addAll((1..30).shuffled())
+    println(s)
+    val it = s.subSet(3, 10)
+    println(it)
+    print(s)
 }
