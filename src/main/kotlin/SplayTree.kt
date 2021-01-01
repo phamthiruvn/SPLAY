@@ -209,7 +209,7 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
 
         override fun next(): T {
             if (!hasNext()) throw NoSuchElementException()
-            var node = list.removeLast()
+            val node = list.removeLast()
             current = node
             if (node.right != null) pushAll(node.right!!)
             return current!!.value
@@ -401,4 +401,38 @@ open class SplayTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSort
         val right = node.right
         return right == null || right.value > node.value && checkInvariant(right)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SplayTree<*>
+
+        if (size != other.size) return false
+        if (root != other.root) return false
+
+        if (!containsAll(other.toList())) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = size
+        result = 31 * result + (root?.hashCode() ?: 0)
+        return result
+    }
+
+
+}
+
+fun main() {
+    val s = SplayTree<Int>()
+    s.addAll((1..30).shuffled())
+    println(s)
+    val it = s.iterator()
+    while (it.hasNext()) {
+        it.next()
+        it.remove()
+    }
+    println(s)
 }

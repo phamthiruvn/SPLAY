@@ -11,7 +11,17 @@ fun main() {
 }
 
 class Main : JFrame() {
+
     private val viewer = View(800)
+
+    init {
+        addGraphic()
+        addMenu()
+        setSize(800, 600)
+        isResizable = false
+        isVisible = true
+        defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+    }
 
     private fun addGraphic() {
         this.add(viewer)
@@ -30,6 +40,7 @@ class Main : JFrame() {
             textField.text = ""
             repaint()
         }
+
         val deleteButton = JButton("Delete")
         deleteButton.addActionListener {
             if (!textField.text.isInt()) showMessageDialog(null, "Write a number")
@@ -51,12 +62,4 @@ class Main : JFrame() {
         this.add(panel, BorderLayout.NORTH)
     }
 
-    init {
-        addGraphic()
-        addMenu()
-        setSize(800, 450)
-        isResizable = false
-        isVisible = true
-        defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-    }
 }
